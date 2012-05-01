@@ -1,0 +1,15 @@
+
+<div class="center">
+
+    <form enctype="multipart/form-data" method="post" action="">
+        {{ xsrf_form_html() }}
+        <input type="file" name="file"/>
+        <input type="submit" value="Submit"/>
+    </form>
+
+</div>
+<div class="center">
+{% if url%}
+    {{url}}
+{% end %}
+</div>

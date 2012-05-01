@@ -1,0 +1,31 @@
+#!/bin/bash
+# This is a simple build script and will be executed on your CI system if 
+# available.  Otherwise it will execute while your application is stopped
+# before the deploy step.  This script gets executed directly, so it
+# could be python, php, ruby, etc.
+
+VIRT_DIR=$OPENSHIFT_RUNTIME_DIR/virtenv
+REQ_TXT=$OPENSHIFT_RUNTIME_DIR/requirements.txt
+UPDATE_FLAG="no"
+
+if [ ! -f $REQ_TXT ]; then
+  cp ${OPENSHIFT_REPO_DIR}requirements.txt $REQ_TXT
+  UPDATE_FLAG="yes"
+  echo 'compare file not existed, need update packages!'
+else
+  DIFF_STR=`diff ${OPENSHIFT_REPO_DIR}requirements.txt $REQ_TXT`
+  if [ ${#DIFF_STR} -gt 0 ];then
+    cp ${OPENSHIFT_REPO_DIR}requirements.txt $REQ_TXT
+    UPDATE_FLAG="yes"
+    echo 'requirenment.txt updated, update packages!'
+  fi
+fi
+
+if [ "$UPDATE_FLAG" == "yes" ]; then
+  virtualenv --no-site-packages --clear $VIRT_DIR
+  source $VIRT_DIR/bin/activate
+
+  export PIP_DOWNLOAD_CACHE=${OPENSHIFT_TMP_DIR}.pip/cache
+
+  pip install --log=${OPENSHIFT_TMP_DIR}.pip/pip.log -r ${OPENSHIFT_REPO_DIR}requirements.txt
+fi
